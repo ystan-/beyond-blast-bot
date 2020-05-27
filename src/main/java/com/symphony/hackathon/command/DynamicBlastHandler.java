@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 public class DynamicBlastHandler implements ElementsResponse {
     private String LINK_PREFIX = "http://localhost:8080/r/";
     private final SymBotClient bot;
-    private final SymOBORSAAuth oboAuth;
     private final SymConfig botConfig;
     private final TemplatesService templatesService;
     private final DistributionListRepository distributionListRepository;
@@ -37,13 +36,11 @@ public class DynamicBlastHandler implements ElementsResponse {
     public static final String LINK_REGEX = "\\b((https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|])";
 
     public DynamicBlastHandler(SymBotClient bot,
-                               SymOBORSAAuth oboAuth,
                                SymConfig botConfig,
                                TemplatesService templatesService,
                                DistributionListRepository distributionListRepository,
                                HashLinkRepository hashLinkRepository) {
         this.bot = bot;
-        this.oboAuth = oboAuth;
         this.botConfig = botConfig;
         this.templatesService = templatesService;
         this.distributionListRepository = distributionListRepository;
@@ -135,6 +132,8 @@ public class DynamicBlastHandler implements ElementsResponse {
             List<Long> recipients = Arrays.stream(formValues.get("recipientIds").toString()
                 .split(",")).map(Long::parseLong).collect(Collectors.toList());
 
+            SymOBORSAAuth oboAuth = new SymOBORSAAuth(botConfig);
+            oboAuth.authenticate();
             SymOBOUserRSAAuth userAuth = oboAuth.getUserAuth(user.getUserId());
             SymOBOClient oboClient = SymOBOClient.initOBOClient(botConfig, userAuth);
 

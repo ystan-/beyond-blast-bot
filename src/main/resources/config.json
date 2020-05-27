@@ -10,7 +10,10 @@
 
     "botUsername": "beyond-blast-bot",
     "botEmailAddress": "beyond-blast-bot@bots.symphony.com",
-
     "botPrivateKeyPath": "rsa/",
-    "botPrivateKeyName": "private.pem"
+    "botPrivateKeyName": "private.pem",
+
+    "appId": "beyond-blast-app",
+    "appPrivateKeyPath": "rsa/",
+    "appPrivateKeyName": "private.pem"
 }

@@ -104,11 +104,11 @@ public class DynamicBlastHandler implements ElementsResponse {
                 );
                 return;
             }
-
-            if (userTemplate.contains("{{mention}}")) {
+            String previewMessage = userTemplate;
+            if (previewMessage.contains("{{mention}}")) {
                 String mentionML = "<mention uid=\"" + recipients.get(0).getId() + "\" />";
-                userTemplate = templatesService.compileInline(
-                    userTemplate,
+                previewMessage = templatesService.compileInline(
+                    previewMessage,
                     Map.of("mention", new Handlebars.SafeString(mentionML))
                 );
             }
@@ -117,11 +117,11 @@ public class DynamicBlastHandler implements ElementsResponse {
                 .collect(Collectors.joining(","));
 
             Map<String, Object> data = Map.of(
-                "message", new Handlebars.SafeString(userTemplate),
+                "message", new Handlebars.SafeString(previewMessage),
                 "recipients", recipients,
                 "recipientsCount", recipients.size(),
                 "recipientIds", recipientIds,
-                "template", formValues.get("template").toString()
+                "template", userTemplate
             );
             String message = templatesService.compile("preview-blast", data);
             bot.getMessagesClient().sendMessage(elementsAction.getStreamId(), new OutboundMessage(message));

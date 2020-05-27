@@ -1,7 +1,8 @@
 package com.symphony.hackathon.command;
 
 import clients.SymBotClient;
-import com.github.jknack.handlebars.Handlebars;
+import com.symphony.hackathon.model.DistributionList;
+import com.symphony.hackathon.model.Template;
 import com.symphony.hackathon.repository.DistributionListRepository;
 import com.symphony.hackathon.repository.TemplateRepository;
 import com.symphony.hackathon.service.TemplatesService;
@@ -10,8 +11,8 @@ import model.OutboundMessage;
 import model.User;
 import model.events.SymphonyElementsAction;
 import org.springframework.stereotype.Service;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -20,7 +21,6 @@ public class PreparedBlastFormHandler implements ElementsResponse {
     private final TemplatesService template;
     private final DistributionListRepository distributionListRepository;
     private final TemplateRepository templateRepository;
-    public static final String OPTION_TEMPLATE = "<option value=\"%s\">%s</option>";
 
     public PreparedBlastFormHandler(SymBotClient bot,
                                     TemplatesService template,
@@ -33,15 +33,8 @@ public class PreparedBlastFormHandler implements ElementsResponse {
     }
 
     public void execute(User user, SymphonyElementsAction action) {
-        String distributionLists = distributionListRepository.findAllByOwner(user.getUserId())
-            .stream()
-            .map(d -> String.format(OPTION_TEMPLATE, d.getId(), d.getName()))
-            .collect(Collectors.joining("\n"));
-
-        String templates = templateRepository.findAllByOwner(user.getUserId())
-            .stream()
-            .map(t -> String.format(OPTION_TEMPLATE, t.getId(), t.getName()))
-            .collect(Collectors.joining("\n"));
+        List<DistributionList> distributionLists = distributionListRepository.findAllByOwner(user.getUserId());
+        List<Template> templates = templateRepository.findAllByOwner(user.getUserId());
 
         if (distributionLists.isEmpty()) {
             String error = "Please setup at least one distribution list first";
@@ -56,8 +49,8 @@ public class PreparedBlastFormHandler implements ElementsResponse {
         }
 
         Map<String, Object> data = Map.of(
-            "distributionLists", new Handlebars.SafeString(distributionLists),
-            "templates", new Handlebars.SafeString(templates)
+            "distributionLists", distributionLists,
+            "templates", templates
         );
 
         String message = template.compile("prepared-blast-form", data);

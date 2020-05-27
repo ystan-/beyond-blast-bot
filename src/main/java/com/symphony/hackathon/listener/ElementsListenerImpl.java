@@ -3,9 +3,7 @@ package com.symphony.hackathon.listener;
 import clients.SymBotClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.symphony.hackathon.command.ElementsResponse;
-import com.symphony.hackathon.command.DynamicBlastHandler;
-import com.symphony.hackathon.command.PreparedBlastFormHandler;
+import com.symphony.hackathon.command.*;
 import com.symphony.hackathon.service.TemplatesService;
 import listeners.ElementsListener;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +19,7 @@ import java.util.Map;
 public class ElementsListenerImpl implements ElementsListener {
     private final SymBotClient bot;
     private final Map<String, ElementsResponse> responses;
-    private final List<String> menuForms;
+    private final List<String> staticForms;
     private final ObjectMapper mapper;
     private final TemplatesService template;
 
@@ -29,17 +27,19 @@ public class ElementsListenerImpl implements ElementsListener {
                                 ObjectMapper mapper,
                                 TemplatesService template,
                                 DynamicBlastHandler dynamicBlast,
-                                PreparedBlastFormHandler preparedBlastFormHandler) {
+                                PreparedBlastFormHandler preparedBlastFormHandler,
+                                ManageTemplatesFormHandler manageTemplatesFormHandler,
+                                ManageTemplatesHandler manageTemplatesHandler) {
         this.bot = bot;
         this.mapper = mapper;
         this.template = template;
         this.responses = Map.of(
             "dynamic-blast", dynamicBlast,
-            "prepared-blast-form", preparedBlastFormHandler
+            "prepared-blast-form", preparedBlastFormHandler,
+            "manage-templates-form", manageTemplatesFormHandler,
+            "manage-templates", manageTemplatesHandler
         );
-        this.menuForms = List.of(
-            "dynamic-blast-form"
-        );
+        this.staticForms = List.of("dynamic-blast-form");
     }
 
     public void onElementsAction(User user, SymphonyElementsAction action) {
@@ -50,7 +50,7 @@ public class ElementsListenerImpl implements ElementsListener {
         log.info("Received submission: {}\n{}", action.getFormId(), payload);
         if (responses.containsKey(action.getFormId())) {
             responses.get(action.getFormId()).execute(user, action);
-        } else if (menuForms.contains(action.getFormId())) {
+        } else if (staticForms.contains(action.getFormId())) {
             this.bot.getMessagesClient().sendMessage(
                 action.getStreamId(),
                 new OutboundMessage(template.load(action.getFormId()))

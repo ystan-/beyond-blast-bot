@@ -1,0 +1,14 @@
+<form id="manage-templates">
+    <h3>Add/Edit Template</h3>
+    <div style="display:none">
+        <text-field name="id">{{id}}</text-field>
+    </div>
+    Name:
+    <text-field name="name">{{name}}</text-field>
+    Template:
+    <textarea name="template" placeholder="Write your template here.." required="true">{{template}}</textarea>
+    <i>Use \{{mention}} to place an @mention to the recipient and \{{url}} to place your tracking link</i>
+    <br /><br />
+    Tracking URL (Optional): <text-field name="url" />
+    <button name="save-template" type="action">Save Template</button>
+</form>

@@ -1,0 +1,25 @@
+<form id="manage-templates">
+    <h3>Templates</h3>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Edit</th>
+        </tr>
+        {{#each templates}}
+            <tr>
+                <td>{{name}}</td>
+                <td>
+                    <button name="manage-template-{{id}}" type="action">Edit</button>
+                </td>
+            </tr>
+        {{else}}
+            <tr>
+                <td colspan="2">
+                    No templates
+                </td>
+            </tr>
+        {{/each}}
+    </table>
+
+    <button name="add-template" type="action">Add New Template</button>
+</form>

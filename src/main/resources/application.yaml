@@ -1,0 +1,7 @@
+logging:
+    level:
+        ROOT: INFO
+        authentication: ERROR
+        org.springframework.data: ERROR
+        org.springframework.boot: ERROR
+        org.springframework.web: ERROR

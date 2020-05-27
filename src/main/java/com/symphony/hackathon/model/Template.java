@@ -9,7 +9,7 @@ import org.springframework.data.annotation.Id;
 public class Template {
     @Id
     private long id;
-    private String title;
+    private String name;
     private String template;
     private long owner;
 }

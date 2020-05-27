@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.symphony.hackathon.command.ElementsResponse;
 import com.symphony.hackathon.command.DynamicBlastHandler;
+import com.symphony.hackathon.command.PreparedBlastFormHandler;
 import com.symphony.hackathon.service.TemplatesService;
 import listeners.ElementsListener;
 import lombok.extern.slf4j.Slf4j;
@@ -27,12 +28,14 @@ public class ElementsListenerImpl implements ElementsListener {
     public ElementsListenerImpl(SymBotClient bot,
                                 ObjectMapper mapper,
                                 TemplatesService template,
-                                DynamicBlastHandler dynamicBlast) {
+                                DynamicBlastHandler dynamicBlast,
+                                PreparedBlastFormHandler preparedBlastFormHandler) {
         this.bot = bot;
         this.mapper = mapper;
         this.template = template;
         this.responses = Map.of(
-            "dynamic-blast", dynamicBlast
+            "dynamic-blast", dynamicBlast,
+            "prepared-blast-form", preparedBlastFormHandler
         );
         this.menuForms = List.of(
             "dynamic-blast-form"

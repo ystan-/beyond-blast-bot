@@ -12,4 +12,6 @@ public class DistributionList {
     @Id
     private long id;
     private List<UserInfo> users;
+    private long owner;
+    private String name;
 }

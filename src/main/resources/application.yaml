@@ -1,12 +1,16 @@
 spring:
   profiles:
       active: dev
+  data:
+      mongodb:
+          uri: mongodb+srv://
 logging:
     level:
         ROOT: INFO
         authentication: ERROR
         freemarker: OFF
         org.apache.catalina: ERROR
+        org.mongodb.driver: ERROR
         org.springframework.boot: ERROR
         org.springframework.data: ERROR
         org.springframework.scheduling: ERROR

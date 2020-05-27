@@ -12,21 +12,23 @@ import model.OutboundMessage;
 import model.User;
 import model.events.SymphonyElementsAction;
 import org.springframework.stereotype.Service;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Service
-public class NewTemplateElementsResponse implements ElementsResponse {
+public class DynamicBlastHandler implements ElementsResponse {
     private final SymBotClient bot;
     private final SymOBORSAAuth oboAuth;
     private final SymConfig botConfig;
     private final TemplatesService template;
 
-    public NewTemplateElementsResponse(SymBotClient bot,
-                                       SymOBORSAAuth oboAuth,
-                                       SymConfig botConfig,
-                                       TemplatesService template) {
+    public DynamicBlastHandler(SymBotClient bot,
+                               SymOBORSAAuth oboAuth,
+                               SymConfig botConfig,
+                               TemplatesService template) {
         this.bot = bot;
         this.oboAuth = oboAuth;
         this.botConfig = botConfig;
@@ -35,27 +37,37 @@ public class NewTemplateElementsResponse implements ElementsResponse {
 
     @SuppressWarnings("unchecked")
     public void execute(User user, SymphonyElementsAction action) {
+        bot.getMessagesClient().sendMessage(action.getStreamId(), new OutboundMessage("Sending blast.."));
+
         Map<String, Object> formValues = action.getFormValues();
-        String title = formValues.get("title").toString();
+        String url = formValues.get("url").toString();
         String userTemplate = formValues.get("template").toString();
         List<Long> recipients = (List<Long>) formValues.get("recipients");
 
         SymOBOUserRSAAuth userAuth = oboAuth.getUserAuth(user.getUserId());
         SymOBOClient oboClient = SymOBOClient.initOBOClient(botConfig, userAuth);
 
-        Map<String, String> data = Map.of("title", title, "body", userTemplate);
-        String message = template.compile("blast-template", data);
-
-        boolean postProcess = message.contains("{{mention}}");
+        boolean postProcessMention = userTemplate.contains("{{mention}}");
+        boolean postProcessUrl = userTemplate.contains("{{url}}") && !url.isEmpty();
 
         for (long recipient : recipients) {
-            String thisMessage = message;
-            if (postProcess) {
-                Map<String, Object> postData = Map.of(
-                    "mention", new Handlebars.SafeString("<mention uid=\""+recipient+"\" />")
-                );
-                thisMessage = template.compileInline(message, postData);
+            String thisMessage = userTemplate;
+
+            Map<String, Object> postData = new HashMap<>();
+            if (postProcessMention) {
+                String mentionML = "<mention uid=\"" + recipient + "\" />";
+                postData.put("mention", new Handlebars.SafeString(mentionML));
             }
+            if (postProcessUrl) {
+                String trackingHash = UUID.randomUUID().toString();
+                String separator = url.contains("?") ? "&" : "?";
+                String linkML = "<a href=\"" + url + separator + trackingHash + "\">" + url + "</a>";
+                postData.put("url", new Handlebars.SafeString(linkML));
+            }
+            if (!postData.isEmpty()) {
+                thisMessage = template.compileInline(userTemplate, postData);
+            }
+
             log.info("Obtaining streamId for: {}", recipient);
             String streamId = oboClient.getStreamsClient().getUserIMStreamId(recipient);
             log.info("Sending message to stream: {}", streamId);

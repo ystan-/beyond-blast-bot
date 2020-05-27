@@ -36,6 +36,12 @@ public class ManageTemplatesHandler implements ElementsResponse {
 
         if (action.equals("add-template")) {
             template = Template.builder().build();
+        } else if (action.equals("home")) {
+            this.bot.getMessagesClient().sendMessage(
+                elementsAction.getStreamId(),
+                new OutboundMessage(templatesService.load("menu"))
+            );
+            return;
         } else if (action.equals("cancel-template")) {
             manageTemplatesFormHandler.execute(user, elementsAction);
             return;

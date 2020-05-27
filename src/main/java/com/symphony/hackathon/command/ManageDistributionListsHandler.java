@@ -42,6 +42,12 @@ public class ManageDistributionListsHandler implements ElementsResponse {
 
         if (action.equals("add-distribution-list")) {
             distributionList = DistributionList.builder().build();
+        } else if (action.equals("home")) {
+            this.bot.getMessagesClient().sendMessage(
+                elementsAction.getStreamId(),
+                new OutboundMessage(templatesService.load("menu"))
+            );
+            return;
         } else if (action.equals("cancel-distribution-list")) {
             manageDistributionListsFormHandler.execute(user, elementsAction);
             return;

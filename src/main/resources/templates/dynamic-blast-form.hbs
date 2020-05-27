@@ -2,7 +2,7 @@
     <h3>New Blast</h3>
     Distribution List:
     <select name="distributionList">
-        <option value="none">None</option>
+        <option value="none" selected="true">None</option>
         {{#each distributionLists}}
             <option value="{{id}}">{{name}}</option>
         {{/each}}
@@ -12,8 +12,9 @@
     <person-selector name="recipients" />
 
     <div>Message:</div>
-    <textarea name="template" placeholder="Use \{{mention}} to place an @mention to the recipient" required="true"></textarea>
+    <textarea name="template" placeholder="Use \{{mention}} to place an @mention to the recipient"></textarea>
     <checkbox name="track-urls" value="true" checked="true">Track URLs</checkbox>
     <br />
-    <button name="submit" type="action">Blast</button>
+    <button name="preview-blast" type="action">Preview Blast</button>
+    <button name="home" type="action">Back</button>
 </form>

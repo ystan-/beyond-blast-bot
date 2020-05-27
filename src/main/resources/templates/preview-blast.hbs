@@ -1,0 +1,30 @@
+<form id="dynamic-blast">
+    <h3>Preview Blast</h3>
+
+    <card accent="tempo-bg-color--blue">
+        {{message}}
+    </card>
+
+    <i>This message will be sent to <b>{{recipientsCount}}</b> participants.</i>
+
+    <card accent="tempo-bg-color--blue">
+        <header><i>Click here to review the list of recipients</i></header>
+        <body>
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Company</th>
+                </tr>
+                {{#each recipients}}
+                    <tr>
+                        <td>{{displayName}}</td>
+                        <td>{{company}}</td>
+                    </tr>
+                {{/each}}
+            </table>
+        </body>
+    </card>
+
+    <button name="blast" type="action">Blast</button>
+    <button name="home" type="action">Cancel</button>
+</form>

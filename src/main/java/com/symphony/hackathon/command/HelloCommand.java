@@ -5,7 +5,6 @@ import com.symphony.hackathon.service.TemplatesService;
 import model.InboundMessage;
 import model.OutboundMessage;
 import org.springframework.stereotype.Service;
-import java.util.Map;
 
 @Service
 public class HelloCommand implements Command {
@@ -19,8 +18,7 @@ public class HelloCommand implements Command {
 
     @Override
     public void execute(InboundMessage msg) {
-        Map<String, String> data = Map.of("name", msg.getUser().getFirstName());
-        OutboundMessage msgOut = new OutboundMessage(template.compile("hello", data));
+        OutboundMessage msgOut = new OutboundMessage(template.load("new-template"));
         this.bot.getMessagesClient().sendMessage(msg.getStream().getStreamId(), msgOut);
     }
 }

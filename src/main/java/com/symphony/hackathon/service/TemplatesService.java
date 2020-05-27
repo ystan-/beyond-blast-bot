@@ -28,4 +28,14 @@ public class TemplatesService {
             return null;
         }
     }
+
+    public String load(String templateName) {
+        try {
+            Path path = Paths.get(getClass().getResource("/templates/" + templateName + ".hbs").toURI());
+            return String.join("\n", Files.readAllLines(path));
+        } catch (URISyntaxException | IOException e) {
+            log.error("Unable to compile template", e);
+            return null;
+        }
+    }
 }

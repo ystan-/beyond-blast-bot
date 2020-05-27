@@ -49,16 +49,17 @@ public class NewTemplateElementsResponse implements ElementsResponse {
         boolean postProcess = message.contains("{{mention}}");
 
         for (long recipient : recipients) {
+            String thisMessage = message;
             if (postProcess) {
                 Map<String, Object> postData = Map.of(
                     "mention", new Handlebars.SafeString("<mention uid=\""+recipient+"\" />")
                 );
-                message = template.compileInline(message, postData);
+                thisMessage = template.compileInline(message, postData);
             }
             log.info("Obtaining streamId for: {}", recipient);
             String streamId = oboClient.getStreamsClient().getUserIMStreamId(recipient);
             log.info("Sending message to stream: {}", streamId);
-            oboClient.getMessagesClient().sendMessage(streamId, new OutboundMessage(message));
+            oboClient.getMessagesClient().sendMessage(streamId, new OutboundMessage(thisMessage));
             log.info("Blast successful for: {}", recipient);
         }
 

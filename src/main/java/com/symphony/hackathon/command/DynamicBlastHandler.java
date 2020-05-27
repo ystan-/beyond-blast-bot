@@ -6,7 +6,9 @@ import clients.SymBotClient;
 import clients.SymOBOClient;
 import com.github.jknack.handlebars.Handlebars;
 import com.symphony.hackathon.model.DistributionList;
+import com.symphony.hackathon.model.HashLink;
 import com.symphony.hackathon.repository.DistributionListRepository;
+import com.symphony.hackathon.repository.HashLinkRepository;
 import com.symphony.hackathon.service.TemplatesService;
 import configuration.SymConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +26,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class DynamicBlastHandler implements ElementsResponse {
+    private String LINK_PREFIX = "http://localhost:8080/r/";
     private final SymBotClient bot;
     private final SymOBORSAAuth oboAuth;
     private final SymConfig botConfig;
     private final TemplatesService templatesService;
     private final DistributionListRepository distributionListRepository;
+    private final HashLinkRepository hashLinkRepository;
     public static final String HYPERLINK = "<a href=\"%s\">%s</a>";
     public static final String LINK_REGEX = "\\b((https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|])";
 
@@ -36,12 +40,14 @@ public class DynamicBlastHandler implements ElementsResponse {
                                SymOBORSAAuth oboAuth,
                                SymConfig botConfig,
                                TemplatesService templatesService,
-                               DistributionListRepository distributionListRepository) {
+                               DistributionListRepository distributionListRepository,
+                               HashLinkRepository hashLinkRepository) {
         this.bot = bot;
         this.oboAuth = oboAuth;
         this.botConfig = botConfig;
         this.templatesService = templatesService;
         this.distributionListRepository = distributionListRepository;
+        this.hashLinkRepository = hashLinkRepository;
     }
 
     @SuppressWarnings("unchecked")
@@ -69,9 +75,16 @@ public class DynamicBlastHandler implements ElementsResponse {
             Matcher m = Pattern.compile(LINK_REGEX).matcher(userTemplate);
             while (m.find()) {
                 String url = m.group(1);
-                String newUrl = String.format(HYPERLINK, url + "?" + UUID.randomUUID().toString(), url);
-                log.info("Replacing {} with {}", url, newUrl);
-                userTemplate = userTemplate.replace(url, newUrl);
+
+                if (formValues.containsKey("track-urls")) {
+                    String uuid = UUID.randomUUID().toString();
+                    hashLinkRepository.save(HashLink.builder().id(uuid).url(url).build());
+                    String newUrl = String.format(HYPERLINK, LINK_PREFIX + uuid, url);
+                    userTemplate = userTemplate.replace(url, newUrl);
+                } else {
+                    String newUrl = String.format(HYPERLINK, url, url);
+                    userTemplate = userTemplate.replace(url, newUrl);
+                }
             }
 
             List<UserInfo> recipients = new ArrayList<>();

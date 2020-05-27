@@ -1,7 +1,8 @@
 package com.symphony.hackathon.listener;
 
 import clients.SymBotClient;
-import com.symphony.hackathon.service.TemplatesService;
+import com.symphony.hackathon.command.Command;
+import com.symphony.hackathon.command.HelloCommand;
 import listeners.IMListener;
 import model.InboundMessage;
 import model.OutboundMessage;
@@ -11,18 +12,29 @@ import java.util.Map;
 
 @Service
 public class IMListenerImpl implements IMListener {
-    private final SymBotClient botClient;
-    private final TemplatesService template;
+    private final SymBotClient bot;
+    private final Map<String, Command> commands;
 
-    public IMListenerImpl(SymBotClient botClient, TemplatesService template) {
-        this.botClient = botClient;
-        this.template = template;
+    public IMListenerImpl(HelloCommand hello, SymBotClient bot) {
+        this.bot = bot;
+        commands = Map.of(
+            "hello", hello
+        );
     }
 
     public void onIMMessage(InboundMessage msg) {
-        Map<String, String> data = Map.of("name", msg.getUser().getFirstName());
-        OutboundMessage msgOut = new OutboundMessage(template.compile("hello", data));
-        this.botClient.getMessagesClient().sendMessage(msg.getStream().getStreamId(), msgOut);
+        String msgText = msg.getMessageText().trim();
+        if (!msgText.startsWith("/")) {
+            return;
+        }
+        msgText = msgText.substring(1);
+        String command = msgText.contains(" ") ? msgText.substring(0, msgText.indexOf(' ')) : msgText;
+        if (commands.containsKey(command)) {
+            commands.get(command).execute(msg);
+        } else {
+            this.bot.getMessagesClient()
+                .sendMessage(msg.getStream().getStreamId(), new OutboundMessage("Sorry, I don't understand"));
+        }
     }
 
     public void onIMCreated(Stream stream) {}

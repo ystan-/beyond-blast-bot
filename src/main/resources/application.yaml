@@ -5,6 +5,7 @@ logging:
     level:
         ROOT: INFO
         authentication: ERROR
+        freemarker: OFF
         org.apache.catalina: ERROR
         org.springframework.boot: ERROR
         org.springframework.data: ERROR

@@ -15,6 +15,7 @@ import model.User;
 import model.UserInfo;
 import model.events.SymphonyElementsAction;
 import org.springframework.stereotype.Service;
+import utils.MessageUtils;
 import javax.ws.rs.core.NoContentException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,6 +60,9 @@ public class DynamicBlastHandler implements ElementsResponse {
                 return;
             }
 
+            String userTemplate = MessageUtils.escapeText(formValues.get("template").toString())
+                .replaceAll("\n", "<br/>");
+
             List<UserInfo> recipients = new ArrayList<>();
             if (!formValues.get("distributionList").toString().equals("none")) {
                 long distributionListId = Long.parseLong(formValues.get("distributionList").toString());
@@ -80,11 +84,11 @@ public class DynamicBlastHandler implements ElementsResponse {
                 return;
             }
 
-            String sampleMessage = formValues.get("template").toString();
-            if (sampleMessage.contains("{{mention}}")) {
+            if (userTemplate.contains("&#123;&#123;mention&#125;&#125;")) {
+                userTemplate = userTemplate.replaceAll("&#123;&#123;mention&#125;&#125;", "{{mention}}");
                 String mentionML = "<mention uid=\"" + recipients.get(0).getId() + "\" />";
-                sampleMessage = templatesService.compileInline(
-                    sampleMessage,
+                userTemplate = templatesService.compileInline(
+                    userTemplate,
                     Map.of("mention", new Handlebars.SafeString(mentionML))
                 );
             }
@@ -93,11 +97,11 @@ public class DynamicBlastHandler implements ElementsResponse {
                 .collect(Collectors.joining(","));
 
             Map<String, Object> data = Map.of(
-                "message", new Handlebars.SafeString(sampleMessage),
+                "message", new Handlebars.SafeString(userTemplate),
                 "recipients", recipients,
                 "recipientsCount", recipients.size(),
                 "recipientIds", recipientIds,
-                "template", formValues.get("template").toString()
+                "template", userTemplate
             );
             String message = templatesService.compile("preview-blast", data);
             bot.getMessagesClient().sendMessage(elementsAction.getStreamId(), new OutboundMessage(message));

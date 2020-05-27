@@ -1,0 +1,25 @@
+<form id="manage-distribution-lists">
+    <h3>Distribution Lists</h3>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Edit</th>
+        </tr>
+        {{#each distributionLists}}
+            <tr>
+                <td>{{name}}</td>
+                <td>
+                    <button name="manage-distribution-list-{{id}}" type="action">Edit</button>
+                </td>
+            </tr>
+        {{else}}
+            <tr>
+                <td colspan="2">
+                    No distribution lists
+                </td>
+            </tr>
+        {{/each}}
+    </table>
+
+    <button name="add-distribution-list" type="action">Add New List</button>
+</form>

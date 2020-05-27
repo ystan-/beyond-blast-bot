@@ -17,13 +17,16 @@ public class ManageTemplatesHandler implements ElementsResponse {
     private final SymBotClient bot;
     private final TemplatesService templatesService;
     private final TemplateRepository templateRepository;
+    private final ManageTemplatesFormHandler manageTemplatesFormHandler;
 
     public ManageTemplatesHandler(SymBotClient bot,
                                   TemplatesService templatesService,
-                                  TemplateRepository templateRepository) {
+                                  TemplateRepository templateRepository,
+                                  ManageTemplatesFormHandler manageTemplatesFormHandler) {
         this.bot = bot;
         this.templatesService = templatesService;
         this.templateRepository = templateRepository;
+        this.manageTemplatesFormHandler = manageTemplatesFormHandler;
     }
 
     public void execute(User user, SymphonyElementsAction elementsAction) {
@@ -33,6 +36,9 @@ public class ManageTemplatesHandler implements ElementsResponse {
 
         if (action.equals("add-template")) {
             template = Template.builder().build();
+        } else if (action.equals("cancel-template")) {
+            manageTemplatesFormHandler.execute(user, elementsAction);
+            return;
         } else if (action.equals("save-template")) {
             long id;
             if (formValues.get("id").toString().equals("0")) {
@@ -44,7 +50,6 @@ public class ManageTemplatesHandler implements ElementsResponse {
                 .id(id)
                 .name(formValues.get("name").toString())
                 .template(formValues.get("template").toString())
-                .url(formValues.get("url").toString())
                 .owner(user.getUserId())
                 .build();
             templateRepository.save(template);
@@ -52,6 +57,7 @@ public class ManageTemplatesHandler implements ElementsResponse {
                 elementsAction.getStreamId(),
                 new OutboundMessage("Template saved")
             );
+            manageTemplatesFormHandler.execute(user, elementsAction);
             return;
         } else if (action.startsWith("manage-template-")) {
             long id = Long.parseLong(action.substring(16));

@@ -30,7 +30,9 @@ public class ElementsListenerImpl implements ElementsListener {
                                 PreparedBlastFormHandler preparedBlastFormHandler,
                                 ManageTemplatesFormHandler manageTemplatesFormHandler,
                                 ManageTemplatesHandler manageTemplatesHandler,
-                                DynamicBlastFormHandler dynamicBlastFormHandler) {
+                                DynamicBlastFormHandler dynamicBlastFormHandler,
+                                ManageDistributionListsFormHandler manageDistributionListsFormHandler,
+                                ManageDistributionListsHandler manageDistributionListsHandler) {
         this.bot = bot;
         this.mapper = mapper;
         this.template = template;
@@ -39,6 +41,8 @@ public class ElementsListenerImpl implements ElementsListener {
             "prepared-blast-form", preparedBlastFormHandler,
             "manage-templates-form", manageTemplatesFormHandler,
             "manage-templates", manageTemplatesHandler,
+            "manage-distribution-lists-form", manageDistributionListsFormHandler,
+            "manage-distribution-lists", manageDistributionListsHandler,
             "dynamic-blast-form", dynamicBlastFormHandler
         );
         this.staticForms = List.of("dynamic-blast-form");

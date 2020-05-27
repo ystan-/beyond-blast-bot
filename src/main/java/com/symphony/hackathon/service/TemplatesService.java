@@ -38,4 +38,13 @@ public class TemplatesService {
             return null;
         }
     }
+
+    public String compileInline(String template, Object object) {
+        try {
+            return handlebars.compileInline(template).apply(object);
+        } catch (IOException e) {
+            log.error("Unable to compile template", e);
+            return null;
+        }
+    }
 }

@@ -4,8 +4,10 @@ import authentication.SymOBORSAAuth;
 import authentication.SymOBOUserRSAAuth;
 import clients.SymBotClient;
 import clients.SymOBOClient;
+import com.github.jknack.handlebars.Handlebars;
 import com.symphony.hackathon.service.TemplatesService;
 import configuration.SymConfig;
+import lombok.extern.slf4j.Slf4j;
 import model.OutboundMessage;
 import model.User;
 import model.events.SymphonyElementsAction;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class NewTemplateElementsResponse implements ElementsResponse {
     private final SymBotClient bot;
@@ -41,11 +44,22 @@ public class NewTemplateElementsResponse implements ElementsResponse {
         SymOBOClient oboClient = SymOBOClient.initOBOClient(botConfig, userAuth);
 
         Map<String, String> data = Map.of("title", title, "body", userTemplate);
-        String preMessage = template.compile("blast-template", data);
+        String message = template.compile("blast-template", data);
+
+        boolean postProcess = message.contains("{{mention}}");
 
         for (long recipient : recipients) {
+            if (postProcess) {
+                Map<String, Object> postData = Map.of(
+                    "mention", new Handlebars.SafeString("<mention uid=\""+recipient+"\" />")
+                );
+                message = template.compileInline(message, postData);
+            }
+            log.info("Obtaining streamId for: {}", recipient);
             String streamId = oboClient.getStreamsClient().getUserIMStreamId(recipient);
-            oboClient.getMessagesClient().sendMessage(streamId, new OutboundMessage(preMessage));
+            log.info("Sending message to stream: {}", streamId);
+            oboClient.getMessagesClient().sendMessage(streamId, new OutboundMessage(message));
+            log.info("Blast successful for: {}", recipient);
         }
 
         bot.getMessagesClient().sendMessage(action.getStreamId(), new OutboundMessage("Blast complete!"));

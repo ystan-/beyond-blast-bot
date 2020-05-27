@@ -40,7 +40,7 @@ public class DynamicBlastHandler implements ElementsResponse {
         bot.getMessagesClient().sendMessage(action.getStreamId(), new OutboundMessage("Sending blast.."));
 
         Map<String, Object> formValues = action.getFormValues();
-        String url = formValues.get("url").toString();
+
         String userTemplate = formValues.get("template").toString();
         List<Long> recipients = (List<Long>) formValues.get("recipients");
 
@@ -48,7 +48,6 @@ public class DynamicBlastHandler implements ElementsResponse {
         SymOBOClient oboClient = SymOBOClient.initOBOClient(botConfig, userAuth);
 
         boolean postProcessMention = userTemplate.contains("{{mention}}");
-        boolean postProcessUrl = userTemplate.contains("{{url}}") && !url.isEmpty();
 
         for (long recipient : recipients) {
             String thisMessage = userTemplate;
@@ -58,12 +57,7 @@ public class DynamicBlastHandler implements ElementsResponse {
                 String mentionML = "<mention uid=\"" + recipient + "\" />";
                 postData.put("mention", new Handlebars.SafeString(mentionML));
             }
-            if (postProcessUrl) {
-                String trackingHash = UUID.randomUUID().toString();
-                String separator = url.contains("?") ? "&" : "?";
-                String linkML = "<a href=\"" + url + separator + trackingHash + "\">" + url + "</a>";
-                postData.put("url", new Handlebars.SafeString(linkML));
-            }
+
             if (!postData.isEmpty()) {
                 thisMessage = template.compileInline(userTemplate, postData);
             }

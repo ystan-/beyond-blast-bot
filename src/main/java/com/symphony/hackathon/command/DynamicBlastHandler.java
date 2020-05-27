@@ -16,10 +16,7 @@ import model.UserInfo;
 import model.events.SymphonyElementsAction;
 import org.springframework.stereotype.Service;
 import javax.ws.rs.core.NoContentException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -92,10 +89,15 @@ public class DynamicBlastHandler implements ElementsResponse {
                 );
             }
 
+            String recipientIds = recipients.stream().map(u -> u.getId().toString())
+                .collect(Collectors.joining(","));
+
             Map<String, Object> data = Map.of(
                 "message", new Handlebars.SafeString(sampleMessage),
                 "recipients", recipients,
-                "recipientsCount", recipients.size()
+                "recipientsCount", recipients.size(),
+                "recipientIds", recipientIds,
+                "template", formValues.get("template").toString()
             );
             String message = templatesService.compile("preview-blast", data);
             bot.getMessagesClient().sendMessage(elementsAction.getStreamId(), new OutboundMessage(message));
@@ -103,17 +105,8 @@ public class DynamicBlastHandler implements ElementsResponse {
             bot.getMessagesClient().sendMessage(elementsAction.getStreamId(), new OutboundMessage("Sending blast.."));
 
             String userTemplate = formValues.get("template").toString();
-            List<Long> recipients = new ArrayList<>();
-
-            if (!formValues.get("distributionList").toString().equals("none")) {
-                long distributionListId = Long.parseLong(formValues.get("distributionList").toString());
-                DistributionList distributionList = distributionListRepository.findById(distributionListId).orElse(null);
-                if (distributionList != null) {
-                    recipients.addAll(distributionList.getUsers().stream().map(UserInfo::getId).collect(Collectors.toList()));
-                }
-            }
-
-            recipients.addAll((List<Long>) formValues.get("recipients"));
+            List<Long> recipients = Arrays.stream(formValues.get("recipientIds").toString()
+                .split(",")).map(Long::parseLong).collect(Collectors.toList());
 
             SymOBOUserRSAAuth userAuth = oboAuth.getUserAuth(user.getUserId());
             SymOBOClient oboClient = SymOBOClient.initOBOClient(botConfig, userAuth);

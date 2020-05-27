@@ -15,9 +15,10 @@ import model.User;
 import model.UserInfo;
 import model.events.SymphonyElementsAction;
 import org.springframework.stereotype.Service;
-import utils.MessageUtils;
 import javax.ws.rs.core.NoContentException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -28,6 +29,8 @@ public class DynamicBlastHandler implements ElementsResponse {
     private final SymConfig botConfig;
     private final TemplatesService templatesService;
     private final DistributionListRepository distributionListRepository;
+    public static final String HYPERLINK = "<a href=\"%s\">%s</a>";
+    public static final String LINK_REGEX = "\\b((https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|])";
 
     public DynamicBlastHandler(SymBotClient bot,
                                SymOBORSAAuth oboAuth,
@@ -60,8 +63,16 @@ public class DynamicBlastHandler implements ElementsResponse {
                 return;
             }
 
-            String userTemplate = MessageUtils.escapeText(formValues.get("template").toString())
+            String userTemplate = formValues.get("template").toString()
                 .replaceAll("\n", "<br/>");
+
+            Matcher m = Pattern.compile(LINK_REGEX).matcher(userTemplate);
+            while (m.find()) {
+                String url = m.group(1);
+                String newUrl = String.format(HYPERLINK, url + "?" + UUID.randomUUID().toString(), url);
+                log.info("Replacing {} with {}", url, newUrl);
+                userTemplate = userTemplate.replace(url, newUrl);
+            }
 
             List<UserInfo> recipients = new ArrayList<>();
             if (!formValues.get("distributionList").toString().equals("none")) {
@@ -84,8 +95,7 @@ public class DynamicBlastHandler implements ElementsResponse {
                 return;
             }
 
-            if (userTemplate.contains("&#123;&#123;mention&#125;&#125;")) {
-                userTemplate = userTemplate.replaceAll("&#123;&#123;mention&#125;&#125;", "{{mention}}");
+            if (userTemplate.contains("{{mention}}")) {
                 String mentionML = "<mention uid=\"" + recipients.get(0).getId() + "\" />";
                 userTemplate = templatesService.compileInline(
                     userTemplate,

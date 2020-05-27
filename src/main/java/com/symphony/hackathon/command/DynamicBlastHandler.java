@@ -124,7 +124,7 @@ public class DynamicBlastHandler implements ElementsResponse {
                 "recipients", recipients,
                 "recipientsCount", recipients.size(),
                 "recipientIds", recipientIds,
-                "template", userTemplate
+                "template", formValues.get("template").toString()
             );
             String message = templatesService.compile("preview-blast", data);
             bot.getMessagesClient().sendMessage(elementsAction.getStreamId(), new OutboundMessage(message));

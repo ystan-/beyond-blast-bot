@@ -1,7 +1,12 @@
+spring:
+  profiles:
+      active: dev
 logging:
     level:
         ROOT: INFO
         authentication: ERROR
-        org.springframework.data: ERROR
+        org.apache.catalina: ERROR
         org.springframework.boot: ERROR
+        org.springframework.data: ERROR
+        org.springframework.scheduling: ERROR
         org.springframework.web: ERROR

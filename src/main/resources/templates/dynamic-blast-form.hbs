@@ -1,17 +1,19 @@
 <form id="dynamic-blast">
     <h3>New Blast</h3>
-    Distribution List:
+    <br />
+    <b>Distribution List:</b>
     <select name="distributionList">
         <option value="none" selected="true">None</option>
         {{#each distributionLists}}
             <option value="{{id}}">{{name}}</option>
         {{/each}}
     </select>
+    <br />
 
-    Additional Recipients:
+    <b>Additional Recipients:</b>
     <person-selector name="recipients" />
 
-    <div>Message:</div>
+    <b>Message:</b>
     <textarea name="template" placeholder="Use \{{mention}} to place an @mention to the recipient"></textarea>
     <checkbox name="track-urls" value="true" checked="true">Track URLs</checkbox>
     <br />

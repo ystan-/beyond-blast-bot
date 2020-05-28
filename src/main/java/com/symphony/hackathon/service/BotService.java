@@ -12,10 +12,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class BotService {
     private SymBotClient botClient;
+    private SymOBORSAAuth oboAuth;
 
     public BotService() {
         try {
             this.botClient = SymBotClient.initBotRsa("config.json");
+            this.oboAuth = new SymOBORSAAuth(this.botClient.getConfig());
+            this.oboAuth.authenticate();
         } catch (Exception e) {
             log.error("Error", e);
         }
@@ -33,5 +36,10 @@ public class BotService {
     @Bean
     public SymBotClient getBot() {
         return botClient;
+    }
+
+    @Bean
+    public SymOBORSAAuth getOboAuth() {
+        return oboAuth;
     }
 }

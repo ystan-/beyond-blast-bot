@@ -1,5 +1,6 @@
 package com.symphony.hackathon.command;
 
+import authentication.SymOBOAuth;
 import authentication.SymOBORSAAuth;
 import authentication.SymOBOUserRSAAuth;
 import clients.SymBotClient;
@@ -29,6 +30,7 @@ public class DynamicBlastHandler implements ElementsResponse {
     private String LINK_PREFIX = "http://localhost:8080/r/";
     private final SymBotClient bot;
     private final SymConfig botConfig;
+    private final SymOBORSAAuth oboAuth;
     private final TemplatesService templatesService;
     private final DistributionListRepository distributionListRepository;
     private final HashLinkRepository hashLinkRepository;
@@ -37,11 +39,13 @@ public class DynamicBlastHandler implements ElementsResponse {
 
     public DynamicBlastHandler(SymBotClient bot,
                                SymConfig botConfig,
+                               SymOBORSAAuth oboAuth,
                                TemplatesService templatesService,
                                DistributionListRepository distributionListRepository,
                                HashLinkRepository hashLinkRepository) {
         this.bot = bot;
         this.botConfig = botConfig;
+        this.oboAuth = oboAuth;
         this.templatesService = templatesService;
         this.distributionListRepository = distributionListRepository;
         this.hashLinkRepository = hashLinkRepository;
@@ -132,10 +136,8 @@ public class DynamicBlastHandler implements ElementsResponse {
             List<Long> recipients = Arrays.stream(formValues.get("recipientIds").toString()
                 .split(",")).map(Long::parseLong).collect(Collectors.toList());
 
-            SymOBORSAAuth oboAuth = new SymOBORSAAuth(botConfig);
-            oboAuth.authenticate();
             SymOBOUserRSAAuth userAuth = oboAuth.getUserAuth(user.getUserId());
-            SymOBOClient oboClient = SymOBOClient.initOBOClient(botConfig, userAuth);
+            SymOBOClient oboClient = new SymOBOClient(botConfig, userAuth);
 
             boolean postProcessMention = userTemplate.contains("{{mention}}");
 

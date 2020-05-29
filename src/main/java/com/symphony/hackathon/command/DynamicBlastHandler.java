@@ -17,6 +17,7 @@ import model.OutboundMessage;
 import model.User;
 import model.UserInfo;
 import model.events.SymphonyElementsAction;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.ws.rs.core.NoContentException;
 import java.util.*;
@@ -27,7 +28,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class DynamicBlastHandler implements ElementsResponse {
-    private String LINK_PREFIX = "http://localhost:8080/r/";
+    @Value("${beyond-blast.link-prefix}")
+    private String linkPrefix;
     private final SymBotClient bot;
     private final SymConfig botConfig;
     private final SymOBORSAAuth oboAuth;
@@ -80,7 +82,7 @@ public class DynamicBlastHandler implements ElementsResponse {
                 if (formValues.containsKey("track-urls")) {
                     String uuid = UUID.randomUUID().toString();
                     hashLinkRepository.save(HashLink.builder().id(uuid).url(url).build());
-                    String newUrl = String.format(HYPERLINK, LINK_PREFIX + uuid, url);
+                    String newUrl = String.format(HYPERLINK, linkPrefix + "/r/" + uuid, url);
                     userTemplate = userTemplate.replace(url, newUrl);
                 } else {
                     String newUrl = String.format(HYPERLINK, url, url);
